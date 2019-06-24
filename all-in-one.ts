@@ -294,4 +294,16 @@
     pick9("foo", ["bar"]);
     pick9(1, ["bar"]);
   }
+
+  // In pure typeland we could describe this "Picking" behaviour as:
+
+  type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
+
+  type User = {
+    firstName: string;
+    surname: string;
+    age: number;
+  };
+
+  type JustNames = Pick<User, "firstName" | "surname">;
 }
