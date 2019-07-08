@@ -15,7 +15,8 @@
 */
 
 // -------------------------------------------
-// The basics, const and type widening
+// Lets start with something simple but really interesting in typescript, literal types
+// type inference and type widening.
 // -------------------------------------------
 
 {
@@ -30,7 +31,7 @@
 
   // note however that the type of "z" is changed due to the usage of the const [hover over it]
 
-  // this is a subtle thing in typescript but super powerful called "type widening"
+  // we can see that the type of z has been "inferred" to be exactly "true" which is a "literal types" // and "type widening"
 }
 
 {
@@ -61,74 +62,114 @@
   listenForEvent(event2); // Can
 }
 
+// Although in the above we are working with "literal types"
+
 {
-  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
+  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening\
+
+  // Let take a little look at how this works with arrays.
 
   const http = "http"; // Type "http" (widening)
   const https = "https"; // Type "https" (widening)
 
-  const protocols = [http, https]; // Type string[]
+  // Guess, what is the type of protocols? You might expect it to be ["http", "https"] ?
+  const protocols = [http, https];
 
-  const first = protocols[0]; // Type string
-  const second = protocols[1]; // Type string
+  const first = protocols[0];
+  const second = protocols[1];
+
+  protocols.push("foo");
 }
+
+// So whats going on here?
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
 
+  // Lets try explicity setting the literal types of the two consts
+
   const http: "http" = "http"; // Type "http" (non-widening)
   const https: "https" = "https"; // Type "https" (non-widening)
 
-  const protocols = [http, https]; // Type ("http" | "https")[]
+  // Guess, what is the type of protocols now?
+  const protocols = [http, https];
 
-  const first = protocols[0]; // Type "http" | "https"
-  const second = protocols[1]; // Type "http" | "https"
+  const first = protocols[0];
+  const second = protocols[1];
+
+  protocols.push("foo");
 }
+
+// Curious, so explicity telling typscript that http and https are going to be their literal type
+// it forces protocol not to be "widened" to string
+
+// But the type of first and second could be either http OR https, thats because typescript has
+// inferred that protocols is an array so all the elements in the array could be EITHER
+// http or https
+
+// What if we wanted the first element to be exactly "http" and the second to be exactly "https"?
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
 
-  const http: "http" = "http"; // Type "http" (non-widening)
-  const https: "https" = "https"; // Type "https" (non-widening)
+  const http = "http";
+  const https = "https";
 
-  const protocols: ["http", "https"] = [http, https]; // Type ("http" | "https")[]
+  const protocols: ["http", "https"] = [http, https];
 
-  const first = protocols[0]; // Type "http" | "https"
-  const second = protocols[1]; // Type "http" | "https"
+  const first = protocols[0];
+  const second = protocols[1];
+  const third = protocols[2]; // cannot access the third element
+
+  protocols.push("http");
 }
 
+// Protocols is now a "tuple" not an "array" type.
+
 // -------------------------------------------
-// Objects
+// Lets take this s step further now and look at how this applies to objects
 // -------------------------------------------
 
 {
+  // Guess, what do you think the type of user is here?
+
   const user = {
     name: "mike",
     age: 34
-  }; // the type of these properties is widened
+  };
+
+  // We can define a function that takes in a User like so:
+
+  function addUserToDB(obj: User) {}
 
   type User = {
     name: string;
     age: number;
   };
 
-  function addUserToDB(obj: User) {}
+  // Then we can call it with our "user" even tho we havent explicity typed user as a "User"
 
   addUserToDB(user);
 }
 
+// Coming a C# / Java background this might seem a little odd, why is typescript allowing this
+// "untyped" object to be passed in somewhere where we are explicity requesting a "User"?
+
+// Lets have a look at what happens if we change the type of one of the properties on our
+// user object?
+
 {
+  const user = {
+    name: "mike",
+    age: "foo"
+  };
+
+  function addUserToDB2(obj: User) {}
+
   type User = {
     name: string;
     age: number;
   };
-
-  const user = {
-    name: "mike",
-    age: "foo"
-  }; // the type of these properties is widened
-
-  function addUserToDB2(obj: User) {}
 
   addUserToDB(user); // we get an error here as expected because it doesnt match
 
@@ -160,14 +201,18 @@
   // But what if you want to strictly define it on the function definition?
 
   // Turns out this is tricker that you would have thought. Before we get there we need to back
-  // up a little and talk about "keyof"
+  // up a little and talk about another powerful feature of the TS type system..
 }
 
 {
+  // Lets look at an example
+
   // Suppose we want to write a function that "picks" a subset of properties from a provided
   // object and returns them?
 
   console.log(pick({ name: "mike", age: 34 }, ["name"])); // { name: "mike" }
+
+  // We might implement it like this:
 
   function pick(obj: any, keysToPick: any): any {
     let newObj = {};
@@ -180,6 +225,9 @@
   }
 
   // Cool, very handy, but how to we make this strongly typed?
+
+  // Typescript is fully turing complete so technically we can express ANYTHING in its type
+  // system, the question is how succinctly can we do it for common tasks?
 
   // Well we can start by saying that we expect the keys to be an array of strings..
 
@@ -200,16 +248,25 @@
     return theThing;
   }
 
-  ensureThingIsNotNull(null);
-  ensureThingIsNotNull("foo");
-  ensureThingIsNotNull(1);
+  const theThing1 = ensureThingIsNotNull(null);
+  const theThing2 = ensureThingIsNotNull("foo");
+  const theThing3 = ensureThingIsNotNull(1);
 
   // So now back to our pick
 
-  function pick3<T>(obj: T, keysToPick: string[]): any {
-    // T but only with the keys from "keysToPick"
-    // ...
+  function pick3<T>(obj: T, keysToPick: string[]): any {}
+
+  // Note we dont have to explicitly provide the generic type when calling teh function,
+  // typescript can infer it:
+
+  {
+    const picked = pick3({ name: "mike", age: 34 }, ["name", "age"]);
   }
+
+  // But the return type is still any, what we really want is a way express is that we are
+  // going to return a type with a subset of properties from T
+
+  // Well we want that same ability for the selection of the keys we want to pick too.
 
   // Well there is a handy keyword called "keyof"
 
@@ -225,18 +282,19 @@
   // But the return types is "any" still.. thats no good
 
   {
-    const picked = pick4({ name: "mike", age: 34 }, ["name"]); // awesome it allows what it should
+    const picked = pick4({ name: "mike", age: 34 }, ["name"]);
   }
 
-  // So the final step is to say that the return type is going to be an object that includes
-  // the keys we supplied
+  // Maybe we can use keyof again here in the returning type:
 
   function pick5<T>(obj: T, keysToPick: (keyof T)[]): { [P in keyof T]: any } {
     return {} as any;
   }
 
+  // Hmm nope, it hasnt picked only the keys we want:
+
   {
-    const picked = pick5({ name: "mike", age: 34 }, ["name"]); // hmm it doesnt?
+    const picked = pick5({ name: "mike", age: 34 }, ["name"]);
   }
 
   // The problem is we arent specifying that the keys we are supplying are going to be the
@@ -245,6 +303,8 @@
   function pick6<T, U>(obj: T, keysToPick: U[]): { [P in U]: any } {
     return {} as any;
   }
+
+  // But the above isnt happy with us
 
   // Hmm.. But how do we specify that U should be the keyof T ?
 
@@ -275,10 +335,12 @@
     const picked = pick8({ name: "mike", age: 34 }, ["name", "age"]); // yey! it now works
   }
 
-  // Awesome! But one issue:
+  // Awesome! Its almost there.
 
-  pick8("foo", ["bar"]);
-  pick8(1, ["bar"]);
+  // Theres one final problem however, we can
+
+  pick8("foo", []);
+  pick8(1, []);
 
   // We can call the pick with any old type.. Thoughts on how to solve this?
 
@@ -295,7 +357,7 @@
     pick9(1, ["bar"]);
   }
 
-  // In pure typeland we could describe this "Picking" behaviour as:
+  // In pure typeland we could describe this "Picking" behaviour in a type alias as
 
   type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
 
@@ -306,4 +368,13 @@
   };
 
   type JustNames = Pick<User, "firstName" | "surname">;
+
+  // Could write our pick now as:
+
+  function pick10<T extends object, U extends keyof T>(
+    obj: T,
+    keysToPick: U[]
+  ): Pick<T, U> {
+    return {} as any;
+  }
 }
