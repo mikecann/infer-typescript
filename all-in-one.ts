@@ -23,7 +23,7 @@
     you think the answer is or keep it in your head or murmer it to yourself or whatever :)
     
   Misc:
-  
+
   - TS is turing complete so technically anything is possbible: https://github.com/Microsoft/TypeScript/issues/14833
   - Some cool advanced types here: https://github.com/andnp/SimplyTyped
 */
@@ -39,71 +39,135 @@
   let y = 123;
   const z = true;
 
+  // so we can re assign the var and let variables as we expect
+
   x = "bar"; // can reassign
   y = 456; // can reassign
-  z = 456; // nope cant reassign to a const this is expected
 
-  // note however that the type of "z" is changed due to the usage of the const [hover over it]
+  // but cannot assign the wrong type to the variables
 
-  // we can see that the type of z has been "inferred" to be exactly "true" which is a "literal types" // and "type widening"
+  x = 666
+  y = "mike"
+
+  // and we cannot reassign to the z variable because its a constant
+
+  z = false;
+
+  // this is all pretty basic but there is something else interesting going on here
+  // if we hover over the variables x,y,z we can inspect their type 
+
+  // see if you can guess what the type of the variables will be
+
+  // z is interesting, its typed to exactly "true" not "boolean", lets look to see what 
+  // we can do with this 
+  
 }
 
 {
-  var x: string = "foo";
+  // lets say we want to represent a binary number purely in the type system (no classes)
 
-  // we can change x
+  let binary: 0 | 1 = 0;
 
-  x = "bar";
+  // now when we try to assign to it then we can assign 0 or 1 as expected
 
-  // but if we declare the type as literal
+  binary = 1
+  binary = 0
 
-  var y: "foo" = "bar"; // we cannot set it to an arbitrary string because this has been literally typed as it will always have this value "foo"
+  // but we cannot assign any other number because its not of the type "exactly 1 or 0"
 
-  // we can shortcut this by using const
+  binary = 22
+  binary = -12
 
-  const z = "foo";
+  // another use case I find this really useful for is to restrict a function to only accept
+  // certain event types
 
-  // this is super useful when we want to restrict a function to only take in one string
+  function listenForEvent(eventName: "click" | "hover") { }
 
-  function listenForEvent(eventName: "foo" | "bar") { }
+  // Now we cant call the function with something other than the type exactly "click or hover"
 
-  listenForEvent("doo"); // cannot call it with something other than "foo" or "bar"
+  listenForEvent("focus"); 
 
-  let event = "bar";
+  // but what if we do this
 
-  listenForEvent(event); // wont even allow our "string" to go it because its not narrow enough
+  let event = "click";
 
-  listenForEvent(event2); // Can
+  // can we call the function with this variable, what do you think?
+
+  listenForEvent(event);
+  
+  // nope, because event is a let and thus typed to "string" it isnt narrow enough as 
+  // listenForEvent only allows exactly the type "click or hover"
+
+  // so we can fix this by "narrowing" the type by either making it const or explicilty 
+  // typing the variable
+
+  let event2: "click" = "click";
+  listenForEvent(event2); 
+
+  const event3 = "click"
+  listenForEvent(event3); 
 }
 
-// Although in the above we are working with "literal types"
+// Okay so lets take this a step further
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening\
 
-  // Let take a little look at how this works with arrays.
+  // lets say we have these two consts
 
-  const http = "http"; // Type "http" (widening)
-  const https = "https"; // Type "https" (widening)
+  const http = "http"; 
+  const https = "https"; 
 
-  // Guess, what is the type of protocols? You might expect it to be ["http", "https"] ?
+  // Then we make an array that contains those two variables
+
   const protocols = [http, https];
+
+  // Given what we have just talked about what do you think the type of "protocols" is?
+  // maybe not what you would expect
+
+  // If we extract out each of the elements from the array we can look at the types here too
 
   const first = protocols[0];
   const second = protocols[1];
 
+  // and we can push into the array as expected 
+
   protocols.push("foo");
 }
 
-// So whats going on here?
+// To see whats going on here lets look at this a little closer
+
+{
+  const http = "http"; 
+  let protocol = http;
+
+  // What do you think the type of protocol is here?
+
+  // typescript has "widened" the type of the const variable when assigning it into the let variable
+}
+
+{
+
+  // If we explicity type the const variable however
+
+  const http: "http" = "http";
+  let protocol = http;
+
+  // what do we think the type of protocol is now?
+
+  // typescript has been told not to "widen the variable"
+
+}
+
+// lets apply that to our array example
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
 
   // Lets try explicity setting the literal types of the two consts
 
-  const http: "http" = "http"; // Type "http" (non-widening)
-  const https: "https" = "https"; // Type "https" (non-widening)
+  const http: "http" = "http"; 
+  const https: "https" = "https"; 
 
   // Guess, what is the type of protocols now?
   const protocols = [http, https];
@@ -114,14 +178,8 @@
   protocols.push("foo");
 }
 
-// Curious, so explicity telling typscript that http and https are going to be their literal type
-// it forces protocol not to be "widened" to string
-
-// But the type of first and second could be either http OR https, thats because typescript has
-// inferred that protocols is an array so all the elements in the array could be EITHER
-// http or https
-
-// What if we wanted the first element to be exactly "http" and the second to be exactly "https"?
+// great but what if we wanted the first element to be exactly "http" and the second to be 
+// exactly "https"?
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
