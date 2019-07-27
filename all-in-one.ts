@@ -2,15 +2,29 @@
 
   Misc Notes
 
-  - Im not going to deal with ecosystem around typescript like build tools editors etc
-  - Im focusing on the type system with this talk and how you can express things succinctly and in a typesafe way
-  - Im not trying to convince you to use typescript, I just think its pretty neat some of things you can do with TS these days
-  - TS is turing complete so technically anything is possbible: https://github.com/Microsoft/TypeScript/issues/14833
-  - I am not a language design expert 
-  - I dont know if this is going to work or not but occasionally im going to ask a question just shout out what you think the answer is going to be
-  - Not going to cover every aspect of TS in this talk, mostly the things I have come across on my daily travels and the things I have found interesting
-  
+  - My name is Mike Cann, co-founder and lead developer at markd.co
 
+  - So typescript is a pretty cool language. I have been developing in it pretty much since its 
+    first release in 2012 but its only fairly recently that I have started to play with some of the 
+    more "advanced" aspects of the language and was impressed so I thought I might share some 
+    of the things that I found cool.
+
+  - So this talk is only going to be about a small part of the language itself.
+
+  - Im not going to deal with ecosystem around typescript like build tools editors etc
+
+  - If you like what you see however there is a whole bunch more stuff you can go into and a 
+    deep rabbit hole of interesting things to learn about.
+
+  - Okay so lets get into it.
+
+  - Oh BTW this is a live coding talk (which I havent ever done before) and I dont know if this is
+    going to work or not but occasionally im going to ask a question so feel free to shout out what
+    you think the answer is or keep it in your head or murmer it to yourself or whatever :)
+    
+  Misc:
+  
+  - TS is turing complete so technically anything is possbible: https://github.com/Microsoft/TypeScript/issues/14833
   - Some cool advanced types here: https://github.com/andnp/SimplyTyped
 */
 
@@ -51,7 +65,7 @@
 
   // this is super useful when we want to restrict a function to only take in one string
 
-  function listenForEvent(eventName: "foo" | "bar") {}
+  function listenForEvent(eventName: "foo" | "bar") { }
 
   listenForEvent("doo"); // cannot call it with something other than "foo" or "bar"
 
@@ -140,7 +154,7 @@
 
   // We can define a function that takes in a User like so:
 
-  function addUserToDB(obj: User) {}
+  function addUserToDB(obj: User) { }
 
   type User = {
     name: string;
@@ -164,7 +178,7 @@
     age: "foo"
   };
 
-  function addUserToDB2(obj: User) {}
+  function addUserToDB2(obj: User) { }
 
   type User = {
     name: string;
@@ -254,7 +268,7 @@
 
   // So now back to our pick
 
-  function pick3<T>(obj: T, keysToPick: string[]): any {}
+  function pick3<T>(obj: T, keysToPick: string[]): any { }
 
   // Note we dont have to explicitly provide the generic type when calling teh function,
   // typescript can infer it:
@@ -310,10 +324,7 @@
 
   // Type constraints to the rescue!
 
-  function pick7<T, U extends keyof T>(
-    obj: T,
-    keysToPick: U[]
-  ): { [P in U]: any } {
+  function pick7<T, U extends keyof T>(obj: T, keysToPick: U[]): { [P in U]: any } {
     return {} as any;
   }
 
@@ -324,10 +335,7 @@
   // One thing tho is we have lost the type of the properties on the returned object
   // but we can get them back again by looking up the property on U
 
-  function pick8<T, U extends keyof T>(
-    obj: T,
-    keysToPick: U[]
-  ): { [P in U]: T[P] } {
+  function pick8<T, U extends keyof T>(obj: T, keysToPick: U[]): { [P in U]: T[P] } {
     return {} as any;
   }
 
@@ -344,10 +352,8 @@
 
   // We can call the pick with any old type.. Thoughts on how to solve this?
 
-  function pick9<T extends object, U extends keyof T>(
-    obj: T,
-    keysToPick: U[]
-  ): { [P in U]: T[P] } {
+  function pick9<T extends object, U extends keyof T>(obj: T, keysToPick: U[]):
+    { [P in U]: T[P] } {
     return {} as any;
   }
 
@@ -356,6 +362,8 @@
     pick9("foo", ["bar"]);
     pick9(1, ["bar"]);
   }
+
+  // Ill show you one extra thing that will set the groundwork for the next section..
 
   // In pure typeland we could describe this "Picking" behaviour in a type alias as
 
@@ -371,10 +379,104 @@
 
   // Could write our pick now as:
 
-  function pick10<T extends object, U extends keyof T>(
-    obj: T,
-    keysToPick: U[]
-  ): Pick<T, U> {
+  function pick10<T extends object, U extends keyof T>(obj: T, keysToPick: U[]): Pick<T, U> {
     return {} as any;
   }
+
+  // Okay this is all good but lets say that we wanted to write a slightly new variation on
+  // our pick function that only picked properties from the object that are functions. 
+  // How can we do this?
+
+  function pickOnlyFunctions1<T extends object, U extends keyof T>(obj: T): Pick<T, U> // U ??
+  {
+    return {} as any;
+  }
+
+  const anObj = {
+    name: "mike",
+    age: 34,
+    execute: () => { return "hello world" }
+  }
+
+  const onlyFunctions = pickOnlyFunctions1(anObj) // well yes we could do it like this
+
+  // But what if the object had lots of fields on it and we dont want to have to go through
+  // and list every single one, it would be nice if there was a way to select just the
+  // fields that are functions
+
+  // We kind of want something that only representing that we only want the keys from a 
+  // given type that are functions:
+
+  type OnlyFunctionNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+
+  type FunctionsOfAnObj = OnlyFunctionNames<typeof anObj>
+
+  // Great! So now we can add that to the return from our function
+
+  function pickOnlyFunctions2<T extends object>(obj: T):
+    Pick<T, OnlyFunctionNames<T>> {
+    return {} as any;
+  }
+
+  {
+    const onlyFunctions = pickOnlyFunctions2(anObj);
+    onlyFunctions.name // doesnt exist
+    onlyFunctions.execute() // does exist
+  }
+
+  // Okay cool, lets take it up one more level 
+
+  // What if we wanted to write a function that calls any function on the given object and
+  // returns the result?
+
+  function resultsOfFunctions(obj: any): any {
+    let returned: any = {};
+    for (let key in obj)
+      if (typeof obj[key] == "function")
+        returned[key] = obj[key]();
+
+    return returned;
+  }
+
+  // How do we strongly type this?
+
+  function resultsOfFunctions2<T>(obj: T): any {
+    return {} as any;
+  }
+
+  // Well we want to make sure we are only returning fields that are functions, but we know
+  // how to do that from before.
+
+  // Then we could turn the pick we used above into a type alias:
+
+  type PickOnlyFunctions<T extends object> = Pick<T, OnlyFunctionNames<T>>
+
+  // Great so now we have just functions we need to somehow get access to just their return type.
+  // This leads us to our final new keyword
+
+  type ReturnTypes<T extends object> = { [K in keyof T]: T[K] extends () => infer R ? R : never }
+
+  // Awesome, now we can finish our function definition
+
+  function resultsOfFunctions3<T extends object>(obj: T): ReturnTypes<PickOnlyFunctions<T>> {
+    return {} as any;
+  }
+
+  {
+    const myObj = {
+      name: "mike",
+      execute1: () => "hello",
+      execute2: () => 123
+    }
+
+    const ret = resultsOfFunctions3(myObj);
+
+    ret.execute1 // is a string
+    ret.execute2 // is a number
+  }
+
+  // infer and conditional types is great for some of the more complex typing scenarios.
+
+  // So given the above lets ask the audience .ts
+
 }
