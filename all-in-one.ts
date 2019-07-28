@@ -35,33 +35,31 @@
 
 {
   // we can declare a variable in a number of ways
-  var x = "foo";
-  let y = 123;
-  const z = true;
+  var x: string = "foo";
+  let y: number = 123;
+  const z: boolean = true;
 
   // so we can re assign the var and let variables as we expect
 
   x = "bar"; // can reassign
   y = 456; // can reassign
+  z = false // cant reassign
 
-  // but cannot assign the wrong type to the variables
+  // but what about their types?
 
   x = 666
   y = "mike"
+  z = "foo"
 
-  // and we cannot reassign to the z variable because its a constant
+  // All as expected, now if we drop the types then everything stays the same
 
-  z = false;
+  // typescript has "inferred" the correct types
 
-  // this is all pretty basic but there is something else interesting going on here
-  // if we hover over the variables x,y,z we can inspect their type 
-
-  // see if you can guess what the type of the variables will be
-
-  // z is interesting, its typed to exactly "true" not "boolean", lets look to see what 
-  // we can do with this 
-
+  // okay fair enough seems simple enough but if we inspect the types there is something
+  // a little more interesting going on here if we look at the type of z
 }
+
+// lets investigate how we can use this "literal" type thing to help us
 
 {
   // lets say we want to represent a binary number purely in the type system (no classes)
@@ -81,11 +79,11 @@
   // another use case I find this really useful for is to restrict a function to only accept
   // certain event types
 
-  function listenForEvent(eventName: "click" | "hover") { }
+  function listen(event: "click" | "hover") { }
 
   // Now we cant call the function with something other than the type exactly "click or hover"
 
-  listenForEvent("focus");
+  listen("focus");
 
   // but what if we do this
 
@@ -93,7 +91,7 @@
 
   // can we call the function with this variable, what do you think?
 
-  listenForEvent(event);
+  listen(event);
 
   // nope, because event is a let and thus typed to "string" it isnt narrow enough as 
   // listenForEvent only allows exactly the type "click or hover"
@@ -122,44 +120,20 @@
 
   const protocols = [http, https];
 
-  // Given what we have just talked about what do you think the type of "protocols" is?
-  // maybe not what you would expect
-
-  // If we extract out each of the elements from the array we can look at the types here too
-
   const first = protocols[0];
   const second = protocols[1];
 
-  // and we can push into the array as expected 
+  // whats the type of first and second?
+
+  // its string because protocols is string[] so we can push any old string in there
 
   protocols.push("foo");
+
+  // but what if we didnt want to allow that? 
 }
 
-// To see whats going on here lets look at this a little closer
-
-{
-  const http = "http";
-  let protocol = http;
-
-  // What do you think the type of protocol is here?
-
-  // typescript has "widened" the type of the const variable when assigning it into the let variable
-}
-
-{
-
-  // If we explicity type the const variable however
-
-  const http: "http" = "http";
-  let protocol = http;
-
-  // what do we think the type of protocol is now?
-
-  // typescript has been told not to "widen the variable"
-
-}
-
-// lets apply that to our array example
+// when you declare protocols typescript thinks that because you made an array the things
+// you are putting into it are any old strings not the types it inferred
 
 {
   // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
@@ -169,7 +143,6 @@
   const http: "http" = "http";
   const https: "https" = "https";
 
-  // Guess, what is the type of protocols now?
   const protocols = [http, https];
 
   const first = protocols[0];
