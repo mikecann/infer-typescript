@@ -284,9 +284,9 @@
   // Suppose we want to write a function that "picks" a subset of properties from a provided
   // object and returns them?
 
-  pick({ name: "mike", age: 34 }, ["name"]) // { name: "mike" }
+  const picked = pick({ name: "mike", age: 34 }, ["name"]) // { name: "mike" }
 
-  // We might implement it like this:
+  // a very simple imperative way to implement this might look like this"
 
   function pick(obj: any, keysToPick: any): any {
     let newObj = {};
@@ -298,12 +298,23 @@
     return newObj;
   }
 
-  // Cool, very handy, but how to we make this strongly typed?
+  // Cool, very handy, but it has problems like we can call it with properties that dont exist on 
+  // the object
 
-  // Typescript is fully turing complete so technically we can express ANYTHING in its type
-  // system, the question is how succinctly can we do it for common tasks?
+  pick({ name: "mike", age: 34 }, ["foo"])
 
-  // Well we can start by saying that we expect the keys to be an array of strings..
+  // Also the returned object is of type any which isnt very useful, another problem is that
+  // the arguments are type any so we can pass anything to them
+
+  pick("foo", "bar")
+
+  // so how do we improve this and enforce some rules using typescript?
+
+  // Well Typescript is fully turing complete so technically we can express ANYTHING in its type
+  // system, but what makes it powerful is that we can express thing succinctly
+  // in it
+
+  // so we can start by saying that we expect the keys to be an array of strings..
 
   function pick2(obj: any, keysToPick: string[]): any {
     // ...
@@ -311,26 +322,11 @@
 
   // Okay now what?
 
-  // Well typescript has a powerful generics system what we might beable to leverage
-
-  // Lets look at a quick example:
-
-  // We can write a function that takes in a generic and returns another generic like this:
-
-  function ensureThingIsNotNull<T>(theThing: T | null): T {
-    if (theThing == null) throw new Error("nope");
-    return theThing;
-  }
-
-  const theThing1 = ensureThingIsNotNull(null);
-  const theThing2 = ensureThingIsNotNull("foo");
-  const theThing3 = ensureThingIsNotNull(1);
-
-  // So now back to our pick
+  // Well typescript has a powerful generics system what we might beable to leverage.
 
   function pick3<T>(obj: T, keysToPick: string[]): any { }
 
-  // Note we dont have to explicitly provide the generic type when calling teh function,
+  // Note we dont have to explicitly provide the generic type when calling the function,
   // typescript can infer it:
 
   {
@@ -371,16 +367,17 @@
     const picked = pick5({ name: "mike", age: 34 }, ["name"]);
   }
 
-  // The problem is we arent specifying that the keys we are supplying are going to be the
-  // only keys on the new object, to do that we have to make it a generic argument too:
+  // What we want to say is that the keys supplied in "keysToPick" are going to be the keys
+  // in the returned object, we can do it like this:
 
   function pick6<T, U>(obj: T, keysToPick: U[]): { [P in U]: any } {
     return {} as any;
   }
 
-  // But the above isnt happy with us
+  // But the above isnt happy with us, why?
 
-  // Hmm.. But how do we specify that U should be the keyof T ?
+  // The error it gives isnt actually very helpful but what its trying to say is that we 
+  // havent told typescript that we want U to be the keys in T, how do we say that?
 
   // Type constraints to the rescue!
 
@@ -389,11 +386,13 @@
   }
 
   {
-    const picked = pick7({ name: "mike", age: 34 }, ["name"]); // yey! it now works
+    const picked = pick7({ name: "mike", age: 34 }, ["name"]);
+
+    // yey our returned object now only has the keys that we have specified
   }
 
   // One thing tho is we have lost the type of the properties on the returned object
-  // but we can get them back again by looking up the property on U
+  // but we can get them back again by looking up the key P on T
 
   function pick8<T, U extends keyof T>(obj: T, keysToPick: U[]): { [P in U]: T[P] } {
     return {} as any;
@@ -405,140 +404,146 @@
 
   // Awesome! Its almost there.
 
-  // Theres one final problem however, we can
+  // Theres one final problem however, we can pass non object types to our function
 
   pick8("foo", []);
   pick8(1, []);
 
-  // We can call the pick with any old type.. Thoughts on how to solve this?
+  // well this is where we can use type constraints again
 
   function pick9<T extends object, U extends keyof T>(obj: T, keysToPick: U[]):
     { [P in U]: T[P] } {
     return {} as any;
   }
+}
 
-  {
-    const picked = pick9({ name: "mike", age: 34 }, ["name", "age"]); // yey! it now works
-    pick9("foo", ["bar"]);
-    pick9(1, ["bar"]);
+// Great this all works. 
+
+// Okay this is all good but lets say that we wanted to write a slightly new variation on
+// our pick function that only picked properties from the object that are functions. 
+// How can we do this?
+
+{
+  function pickOnlyFunctionsx<T extends object, U extends keyof T>(obj: T): { [P in U]: T[P] } {
+    let newObj: any = {};
+    for (let key in obj) {
+      if (typeof obj[key] == "function") {
+        newObj[key] = obj[key];
+      }
+    }
+    return newObj;
   }
+}
 
-  // Ill show you one extra thing that will set the groundwork for the next section..
+const anObj = {
+  name: "mike",
+  age: 34,
+  execute: () => { return "hello world" },
+  execute2: () => 123
+}
 
-  // In pure typeland we could describe this "Picking" behaviour in a type alias as
+{
+  const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
+
+  // So we can see that obviously the above is returning every key on T
+
+  // We kind of want is something that picks just the functions, but how?
+
+  //well first lets extract out this "Pick"'ingness out into its own type:
 
   type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
 
-  type User = {
-    firstName: string;
-    surname: string;
-    age: number;
-  };
+  // okay cool, now we can see what we need is to somehow get all the keys of a given type
+  // that are functions
 
-  type JustNames = Pick<User, "firstName" | "surname">;
+  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 
-  // Could write our pick now as:
+  // Cool looks good, lets try this out in typeland:
 
-  function pick10<T extends object, U extends keyof T>(obj: T, keysToPick: U[]): Pick<T, U> {
-    return {} as any;
-  }
-
-  // Okay this is all good but lets say that we wanted to write a slightly new variation on
-  // our pick function that only picked properties from the object that are functions. 
-  // How can we do this?
-
-  function pickOnlyFunctions1<T extends object, U extends keyof T>(obj: T): Pick<T, U> // U ??
-  {
-    return {} as any;
-  }
-
-  const anObj = {
-    name: "mike",
-    age: 34,
-    execute: () => { return "hello world" }
-  }
-
-  const onlyFunctions = pickOnlyFunctions1(anObj) // well yes we could do it like this
-
-  // But what if the object had lots of fields on it and we dont want to have to go through
-  // and list every single one, it would be nice if there was a way to select just the
-  // fields that are functions
-
-  // We kind of want something that only representing that we only want the keys from a 
-  // given type that are functions:
-
-  type OnlyFunctionNames<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
-
-  type FunctionsOfAnObj = OnlyFunctionNames<typeof anObj>
+  type OnlyTheFunctions = FunctionKeys<typeof anObj>
 
   // Great! So now we can add that to the return from our function
 
-  function pickOnlyFunctions2<T extends object>(obj: T):
-    Pick<T, OnlyFunctionNames<T>> {
+  function pickOnlyFunctionsx2<T extends object>(obj: T): Pick<T, FunctionKeys<T>> {
     return {} as any;
   }
 
-  {
-    const onlyFunctions = pickOnlyFunctions2(anObj);
-    onlyFunctions.name // doesnt exist
-    onlyFunctions.execute() // does exist
+  const picked2 = pickOnlyFunctionsx2(anObj);
+
+  // The problem with the above is that VSCode shows us the type alias not the resultant 
+  // object literal type. 
+}
+
+// To fix this I learnt a neat trick last week:
+
+{
+  type Identity<T> = T;
+  type Pick<T extends object, U extends keyof T> = Identity<{ [P in U]: T[P] }>;
+  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
+
+  function pickOnlyFunctionsx3<T extends object>(obj: T): Pick<T, FunctionKeys<T>> {
+    return {} as any;
   }
 
-  // Okay cool, lets take it up one more level 
+  const picked3 = pickOnlyFunctionsx3(anObj);
+}
 
-  // What if we wanted to write a function that calls any function on the given object and
-  // returns the result?
+// Great
 
+// Lets take this up one final level (I promise) and lets say that we only want to return the
+// results of each function call
+
+{
   function resultsOfFunctions(obj: any): any {
     let returned: any = {};
     for (let key in obj)
       if (typeof obj[key] == "function")
-        returned[key] = obj[key]();
+        returned[key] = obj[key](); // add this
 
     return returned;
   }
 
-  // How do we strongly type this?
+  // Given what we have already
 
-  function resultsOfFunctions2<T>(obj: T): any {
-    return {} as any;
-  }
+  type Identity<T> = T;
+  type Pick<T extends object, U extends keyof T> = Identity<{ [P in U]: T[P] }>;
+  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 
-  // Well we want to make sure we are only returning fields that are functions, but we know
-  // how to do that from before.
+  // Lets alias out our picked functions into a type
 
-  // Then we could turn the pick we used above into a type alias:
+  type PickedFunctions<T extends object> = Pick<T, FunctionKeys<T>>
 
-  type PickOnlyFunctions<T extends object> = Pick<T, OnlyFunctionNames<T>>
-
-  // Great so now we have just functions we need to somehow get access to just their return type.
-  // This leads us to our final new keyword
+  // Cool so we now know that this type has only functions, now we just need a way to somehow
+  // iterate over each of those keys and just get the return type
 
   type ReturnTypes<T extends object> = { [K in keyof T]: T[K] extends () => infer R ? R : never }
 
   // Awesome, now we can finish our function definition
 
-  function resultsOfFunctions3<T extends object>(obj: T): ReturnTypes<PickOnlyFunctions<T>> {
+  function resultsOfFunctions3<T extends object>(obj: T): ReturnTypes<PickedFunctions<T>> {
     return {} as any;
   }
 
-  {
-    const myObj = {
-      name: "mike",
-      execute1: () => "hello",
-      execute2: () => 123
-    }
+  const picked3 = resultsOfFunctions3(anObj);
 
-    const ret = resultsOfFunctions3(myObj);
+  // Lets just use our identity trick again
 
-    ret.execute1 // is a string
-    ret.execute2 // is a number
+  type ReturnTypes2<T extends object> = Identity<{ [K in keyof T]: T[K] extends () => infer R ? R : never }>
+
+
+  function resultsOfFunctions4<T extends object>(obj: T): ReturnTypes2<PickedFunctions<T>> {
+    return {} as any;
   }
 
-  // So now we have done all that we can go back to our user object and create a strict selector  
+  const picked4 = resultsOfFunctions4(anObj);
+}
 
+// ----------------
+// So now we have done all that we can go back to our user object and create a strict selector  
+// ----------------
+
+{
   {
-
     type Subset<A extends {}, B extends {}> = {
       [P in keyof B]: P extends keyof A ? (B[P] extends A[P] | undefined ? A[P] : never) : never;
     }
@@ -561,7 +566,4 @@
     addUserToDB3(user3);
 
   }
-
-  // So given the above lets ask the audience .ts
-
 }

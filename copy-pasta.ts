@@ -1,7 +1,7 @@
-// 1 --------------------------------
+// --------------------------------
 
 function pick(obj: any, keysToPick: any): any {
-  let newObj = {};
+  let newObj: any = {};
   for (let key in obj) {
     if (keysToPick.includes(key)) {
       newObj[key] = obj[key];
@@ -10,7 +10,77 @@ function pick(obj: any, keysToPick: any): any {
   return newObj;
 }
 
-// 2 --------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------------------------------------
+{
+  function pickOnlyFunctions<T extends object, U extends keyof T>(obj: T): { [P in U]: T[P] } {
+    let newObj: any = {};
+    for (let key in obj) {
+      if (typeof obj[key] == "function") {
+        newObj[key] = obj[key];
+      }
+    }
+    return newObj;
+  }
+  
+  const anObj = {
+    name: "mike",
+    age: 34,
+    execute: () => { return "hello world" }
+  }
+  
+  const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
+}
+
+
+
+
+
+
+
+
+
+// --------------------------------------------------
+
+{
+  type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
+}
+
+// ---------------------------------------------------
+
+{
+  type Identity<T> = T;
+  type Pick<T extends object, U extends keyof T> = Identity<{ [P in U]: T[P] }>;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --------------------------------
 
 {
   type Subset<A extends {}, B extends {}> = {
