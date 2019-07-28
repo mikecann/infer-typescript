@@ -60,7 +60,7 @@
 
   // z is interesting, its typed to exactly "true" not "boolean", lets look to see what 
   // we can do with this 
-  
+
 }
 
 {
@@ -85,7 +85,7 @@
 
   // Now we cant call the function with something other than the type exactly "click or hover"
 
-  listenForEvent("focus"); 
+  listenForEvent("focus");
 
   // but what if we do this
 
@@ -94,7 +94,7 @@
   // can we call the function with this variable, what do you think?
 
   listenForEvent(event);
-  
+
   // nope, because event is a let and thus typed to "string" it isnt narrow enough as 
   // listenForEvent only allows exactly the type "click or hover"
 
@@ -102,10 +102,10 @@
   // typing the variable
 
   let event2: "click" = "click";
-  listenForEvent(event2); 
+  listenForEvent(event2);
 
   const event3 = "click"
-  listenForEvent(event3); 
+  listenForEvent(event3);
 }
 
 // Okay so lets take this a step further
@@ -115,8 +115,8 @@
 
   // lets say we have these two consts
 
-  const http = "http"; 
-  const https = "https"; 
+  const http = "http";
+  const https = "https";
 
   // Then we make an array that contains those two variables
 
@@ -138,7 +138,7 @@
 // To see whats going on here lets look at this a little closer
 
 {
-  const http = "http"; 
+  const http = "http";
   let protocol = http;
 
   // What do you think the type of protocol is here?
@@ -166,8 +166,8 @@
 
   // Lets try explicity setting the literal types of the two consts
 
-  const http: "http" = "http"; 
-  const https: "https" = "https"; 
+  const http: "http" = "http";
+  const https: "https" = "https";
 
   // Guess, what is the type of protocols now?
   const protocols = [http, https];
@@ -198,19 +198,10 @@
 
 // Protocols is now a "tuple" not an "array" type.
 
-// -------------------------------------------
-// Lets take this s step further now and look at how this applies to objects
-// -------------------------------------------
+// okay lets take this a step further
 
 {
-  // Guess, what do you think the type of user is here?
-
-  const user = {
-    name: "mike",
-    age: 34
-  };
-
-  // We can define a function that takes in a User like so:
+  // Lets create a function that adds a user to a DB
 
   function addUserToDB(obj: User) { }
 
@@ -219,15 +210,21 @@
     age: number;
   };
 
-  // Then we can call it with our "user" even tho we havent explicity typed user as a "User"
+  // we can then create an object and call the function
+
+  const user = {
+    name: "mike",
+    age: 34
+  };
 
   addUserToDB(user);
+
+  // note that we havent explicity said that the object user is of type User yet typescript 
+  // lets us do this, this is because typescript is a "Structurally Subtyped" language
+  // which basically means that if it looks like a duck and quacks like a duck then its a duck
 }
 
-// Coming a C# / Java background this might seem a little odd, why is typescript allowing this
-// "untyped" object to be passed in somewhere where we are explicity requesting a "User"?
-
-// Lets have a look at what happens if we change the type of one of the properties on our
+// now lets have a look at what happens if we change the type of one of the properties on our
 // user object?
 
 {
@@ -243,7 +240,9 @@
     age: number;
   };
 
-  addUserToDB(user); // we get an error here as expected because it doesnt match
+  addUserToDB(user);
+
+  // we now get an error here as expected our user variable no longer looks like a User
 
   // but what if we add properties that arent explicity defined on the user?
 
@@ -255,12 +254,14 @@
 
   addUserToDB(user2); // hmm.. we dont get an error?
 
-  // This is because typescript uses "Structural Subtyping", so if it looks like a duck then it is a duck
+  // This was wierd to be at first coming from C# with its "Nominal Subtypes" but it turns out 
+  // this can make for some really flexible coding styles and can often really simplify 
+  // your types
 
-  // This was wierd to be at first coming from C# with its "Nominal Subtypes" but I now love its increased
-  // flexibility
+  // writing less types == good
 
-  // But what if we want to say that that the user must not have any other properties on it?
+  // But what if we want to say explicitly that it must be exactly User and contain no other
+  // properties
 
   // Well one way to do it is like this:
 
@@ -272,17 +273,18 @@
 
   // But what if you want to strictly define it on the function definition?
 
-  // Turns out this is tricker that you would have thought. Before we get there we need to back
-  // up a little and talk about another powerful feature of the TS type system..
+  // Turns out this is tricker that you would have thought. And arguably more tricky than
+  // it should be. Before we get there we need to back up a little and talk about a coupple
+  // of other parts of the Typescript type system.
 }
 
-{
-  // Lets look at an example
+// To explain these lets look at another example
 
+{
   // Suppose we want to write a function that "picks" a subset of properties from a provided
   // object and returns them?
 
-  console.log(pick({ name: "mike", age: 34 }, ["name"])); // { name: "mike" }
+  pick({ name: "mike", age: 34 }, ["name"]) // { name: "mike" }
 
   // We might implement it like this:
 
@@ -533,7 +535,32 @@
     ret.execute2 // is a number
   }
 
-  // infer and conditional types is great for some of the more complex typing scenarios.
+  // So now we have done all that we can go back to our user object and create a strict selector  
+
+  {
+
+    type Subset<A extends {}, B extends {}> = {
+      [P in keyof B]: P extends keyof A ? (B[P] extends A[P] | undefined ? A[P] : never) : never;
+    }
+
+    type Strict<A extends {}, B extends {}> = Subset<A, B> & Subset<B, A>;
+
+    type User = {
+      name: string;
+      age: number;
+    };
+
+    function addUserToDB3<T extends Strict<User, T>>(obj: T) { }
+
+    const user3 = {
+      name: "jane",
+      age: 100,
+      foo: "bar"
+    };
+
+    addUserToDB3(user3);
+
+  }
 
   // So given the above lets ask the audience .ts
 
