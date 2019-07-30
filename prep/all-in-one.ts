@@ -2,9 +2,9 @@
 
   Misc Notes
 
-  - My name is Mike Cann, co-founder and lead developer at markd.co
+  - My name is Mike Cann, co-founder and lead developer at a startup called Markd.co
 
-  - This talk is about typescript
+  - I am going to talk to you today about Typescript
 
   - I have been developing in it pretty much since its first release in 2012 but its only 
     fairly recently that I have started to play with some of the more "advanced" aspects of 
