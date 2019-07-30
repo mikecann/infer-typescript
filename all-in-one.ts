@@ -11,16 +11,14 @@
 
   - So this talk is only going to be about a small part of the language itself.
 
-  - Im not going to deal with ecosystem around typescript like build tools editors etc
-
-  - If you like what you see however there is a whole bunch more stuff you can go into and a 
-    deep rabbit hole of interesting things to learn about.
-
-  - Okay so lets get into it.
-
-  - Oh BTW this is a live coding talk (which I havent ever done before) and I dont know if this is
+  - This is a live coding talk (which I havent ever done before) and I dont know if this is
     going to work or not but occasionally im going to ask a question so feel free to shout out what
     you think the answer is or keep it in your head or murmer it to yourself or whatever :)
+
+  - I dont really know the level of peoples typescript knowledge so im just going to start
+    simple and built it up to the interesting stuff
+
+  - I havent got all that much time Okay so lets get into it.
     
   Misc:
 
@@ -106,6 +104,8 @@
   listenForEvent(event3);
 }
 
+/*
+
 // Okay so lets take this a step further
 
 {
@@ -170,6 +170,8 @@
 }
 
 // Protocols is now a "tuple" not an "array" type.
+
+*/
 
 // okay lets take this a step further
 
