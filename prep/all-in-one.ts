@@ -4,19 +4,18 @@
 
   - My name is Mike Cann, co-founder and lead developer at markd.co
 
-  - So typescript is a pretty cool language. I have been developing in it pretty much since its 
-    first release in 2012 but its only fairly recently that I have started to play with some of the 
-    more "advanced" aspects of the language and was impressed so I thought I might share some 
-    of the things that I found cool.
+  - This talk is about typescript
 
-  - So this talk is only going to be about a small part of the language itself.
+  - I have been developing in it pretty much since its first release in 2012 but its only 
+    fairly recently that I have started to play with some of the more "advanced" aspects of 
+    the language and was impressed so I thought I might share some of the things that I found cool.
+
+  - I dont really know the level of peoples typescript knowledge so im just going to start
+    simple and built it up to the interesting stuff
 
   - This is a live coding talk (which I havent ever done before) and I dont know if this is
     going to work or not but occasionally im going to ask a question so feel free to shout out what
     you think the answer is or keep it in your head or murmer it to yourself or whatever :)
-
-  - I dont really know the level of peoples typescript knowledge so im just going to start
-    simple and built it up to the interesting stuff
 
   - I havent got all that much time Okay so lets get into it.
     
