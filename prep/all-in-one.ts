@@ -104,74 +104,6 @@
   listenForEvent(event3);
 }
 
-/*
-
-// Okay so lets take this a step further
-
-{
-  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening\
-
-  // lets say we have these two consts
-
-  const http = "http";
-  const https = "https";
-
-  // Then we make an array that contains those two variables
-
-  const protocols = [http, https];
-
-  const first = protocols[0];
-  const second = protocols[1];
-
-  // whats the type of first and second?
-
-  // its string because protocols is string[] so we can push any old string in there
-
-  protocols.push("foo");
-
-  // but what if we didnt want to allow that? 
-}
-
-// when you declare protocols typescript thinks that because you made an array the things
-// you are putting into it are any old strings not the types it inferred
-
-{
-  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
-
-  // Lets try explicity setting the literal types of the two consts
-
-  const http: "http" = "http";
-  const https: "https" = "https";
-
-  const protocols = [http, https];
-
-  const first = protocols[0];
-  const second = protocols[1];
-
-  protocols.push("foo");
-}
-
-// great but what if we wanted the first element to be exactly "http" and the second to be 
-// exactly "https"?
-
-{
-  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
-
-  const http = "http";
-  const https = "https";
-
-  const protocols: ["http", "https"] = [http, https];
-
-  const first = protocols[0];
-  const second = protocols[1];
-  const third = protocols[2]; // cannot access the third element
-
-  protocols.push("http");
-}
-
-// Protocols is now a "tuple" not an "array" type.
-
-*/
 
 // okay lets take this a step further
 
@@ -542,3 +474,74 @@ const anObj = {
 
   }
 }
+
+
+
+/*
+
+// Okay so lets take this a step further
+
+{
+  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening\
+
+  // lets say we have these two consts
+
+  const http = "http";
+  const https = "https";
+
+  // Then we make an array that contains those two variables
+
+  const protocols = [http, https];
+
+  const first = protocols[0];
+  const second = protocols[1];
+
+  // whats the type of first and second?
+
+  // its string because protocols is string[] so we can push any old string in there
+
+  protocols.push("foo");
+
+  // but what if we didnt want to allow that? 
+}
+
+// when you declare protocols typescript thinks that because you made an array the things
+// you are putting into it are any old strings not the types it inferred
+
+{
+  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
+
+  // Lets try explicity setting the literal types of the two consts
+
+  const http: "http" = "http";
+  const https: "https" = "https";
+
+  const protocols = [http, https];
+
+  const first = protocols[0];
+  const second = protocols[1];
+
+  protocols.push("foo");
+}
+
+// great but what if we wanted the first element to be exactly "http" and the second to be 
+// exactly "https"?
+
+{
+  // Borrowed from: https://mariusschulz.com/blog/typescript-2-1-literal-type-widening
+
+  const http = "http";
+  const https = "https";
+
+  const protocols: ["http", "https"] = [http, https];
+
+  const first = protocols[0];
+  const second = protocols[1];
+  const third = protocols[2]; // cannot access the third element
+
+  protocols.push("http");
+}
+
+// Protocols is now a "tuple" not an "array" type.
+
+*/
