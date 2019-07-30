@@ -1,49 +1,15 @@
-// --------------------------------
-
-function pick(obj: any, keysToPick: any): any {
-  let newObj: any = {};
-  for (let key in obj) {
-    if (keysToPick.includes(key)) {
-      newObj[key] = obj[key];
-    }
-  }
-  return newObj;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ----------------------------------------
 {
   function pickOnlyFunctions<T extends object, U extends keyof T>(obj: T): { [P in U]: T[P] } {
-    let newObj: any = {};
-    for (let key in obj) {
-      if (typeof obj[key] == "function") {
-        newObj[key] = obj[key];
-      }
-    }
-    return newObj;
+    throw "not implemented"
   }
-  
+
   const anObj = {
     name: "mike",
     age: 34,
     execute: () => { return "hello world" }
   }
-  
+
   const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
 }
 
