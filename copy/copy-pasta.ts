@@ -7,7 +7,8 @@
   const anObj = {
     name: "mike",
     age: 34,
-    execute: () => { return "hello world" }
+    start: () => { return "hello world" },
+    launch: () => { return 123 }
   }
 
   const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
