@@ -1,6 +1,6 @@
 {
 
-  function pick(obj, keys) {
+  function pick(obj, keys): any {
     throw "doesnt matter"
   }
 
