@@ -14,6 +14,6 @@
 
   pick(user, ["foo"]);
 
-  pick(user, 444);
+  pick("whoops", 444);
 
 }
