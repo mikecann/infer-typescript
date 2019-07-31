@@ -12,4 +12,8 @@
 
   const picked = pick(user, ["name", "age"]); // { name: "mike", age: 34 }
 
+  pick(user, ["foo"]);
+
+  pick(user, 444);
+
 }
