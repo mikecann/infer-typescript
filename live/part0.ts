@@ -1,8 +1,8 @@
 
 {
-  var x = "foo"
-  let y = 123
-  const z = true
+  var x: string = "foo"
+  let y: number = 123
+  const z: boolean = true
 
   x = "bar"
   y = 444
