@@ -8,10 +8,9 @@
     age: number
   }
 
-  const user = {
+  const user: User = {
     name: "mike",
     age: 20,
-    foo: "bar"
   }
 
   addUserToDb(user);
