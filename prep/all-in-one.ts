@@ -321,128 +321,39 @@
     { [P in U]: T[P] } {
     return {} as any;
   }
-}
 
-// Great this all works. 
+  // Awesome but now what if wanted modify the function a little so it only will 
+  // pick functions
 
-// Okay this is all good but lets say that we wanted to write a slightly new variation on
-// our pick function that only picked properties from the object that are functions. 
-// How can we do this?
-
-{
-  function pickOnlyFunctionsx<T extends object, U extends keyof T>(obj: T): { [P in U]: T[P] } {
-    let newObj: any = {};
-    for (let key in obj) {
-      if (typeof obj[key] == "function") {
-        newObj[key] = obj[key];
-      }
-    }
-    return newObj;
-  }
-}
-
-const anObj = {
-  name: "mike",
-  age: 34,
-  execute: () => { return "hello world" },
-  execute2: () => 123
-}
-
-{
-  const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
-
-  // So we can see that obviously the above is returning every key on T
-
-  // We kind of want is something that picks just the functions, but how?
-
-  //well first lets extract out this "Pick"'ingness out into its own type:
-
-  type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
-
-  // okay cool, now we can see what we need is to somehow get all the keys of a given type
-  // that are functions
-
-  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
-
-  // Cool looks good, lets try this out in typeland:
-
-  type OnlyTheFunctions = FunctionKeys<typeof anObj>
-
-  // Great! So now we can add that to the return from our function
-
-  function pickOnlyFunctionsx2<T extends object>(obj: T): Pick<T, FunctionKeys<T>> {
+  function pick10<T extends object, U extends OnlyFunctionKeys10<T>>(obj: T, keysToPick: U[]):
+    { [P in U]: T[P] } {
     return {} as any;
   }
 
-  const picked2 = pickOnlyFunctionsx2(anObj);
+  type OnlyFunctionKeys10<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
 
-  // The problem with the above is that VSCode shows us the type alias not the resultant 
-  // object literal type. 
-}
+  const picked10 = pick10({ name: "mike", execute: () => "hello" }, ["execute"]);
 
-// To fix this I learnt a neat trick last week:
+  // Okay cool, but what if now instead of returning the function we wanted to execute it?
 
-{
-  type Identity<T> = T;
-  type Pick<T extends object, U extends keyof T> = Identity<{ [P in U]: T[P] }>;
-  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
-
-  function pickOnlyFunctionsx3<T extends object>(obj: T): Pick<T, FunctionKeys<T>> {
+  function pick11<T extends object, U extends OnlyFunctionKeys10<T>>(obj: T, keysToPick: U[]):
+    { [P in U]: T[P] extends () => infer X ? X : never } {
     return {} as any;
   }
 
-  const picked3 = pickOnlyFunctionsx3(anObj);
-}
+  const picked11 = pick11({ name: "mike", execute: () => "hello" }, ["execute"]);
 
-// Great
+  // infer is cool, it works with function arguments too:
 
-// Lets take this up one final level (I promise) and lets say that we only want to return the
-// results of each function call
-
-{
-  function resultsOfFunctions(obj: any): any {
-    let returned: any = {};
-    for (let key in obj)
-      if (typeof obj[key] == "function")
-        returned[key] = obj[key](); // add this
-
-    return returned;
-  }
-
-  // Given what we have already
-
-  type Identity<T> = T;
-  type Pick<T extends object, U extends keyof T> = Identity<{ [P in U]: T[P] }>;
-  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
-
-  // Lets alias out our picked functions into a type
-
-  type PickedFunctions<T extends object> = Pick<T, FunctionKeys<T>>
-
-  // Cool so we now know that this type has only functions, now we just need a way to somehow
-  // iterate over each of those keys and just get the return type
-
-  type ReturnTypes<T extends object> = { [K in keyof T]: T[K] extends () => infer R ? R : never }
-
-  // Awesome, now we can finish our function definition
-
-  function resultsOfFunctions3<T extends object>(obj: T): ReturnTypes<PickedFunctions<T>> {
+  function pick12<T extends object, U extends OnlyFunctionKeys10<T>>(obj: T, keysToPick: U[]):
+    { [P in U]: T[P] extends (args: infer Y) => infer X ? Y : never } {
     return {} as any;
   }
 
-  const picked3 = resultsOfFunctions3(anObj);
+  const picked12 = pick12({ name: "mike", execute: (say: number) => "hello" }, ["execute"]);
 
-  // Lets just use our identity trick again
-
-  type ReturnTypes2<T extends object> = Identity<{ [K in keyof T]: T[K] extends () => infer R ? R : never }>
-
-
-  function resultsOfFunctions4<T extends object>(obj: T): ReturnTypes2<PickedFunctions<T>> {
-    return {} as any;
-  }
-
-  const picked4 = resultsOfFunctions4(anObj);
 }
+
 
 // ----------------
 // So now we have done all that we can go back to our user object and create a strict selector  
@@ -501,7 +412,7 @@ const anObj = {
 
   protocols.push("foo");
 
-  // but what if we didnt want to allow that? 
+  // but what if we didnt want to allow that?
 }
 
 // when you declare protocols typescript thinks that because you made an array the things
@@ -523,7 +434,7 @@ const anObj = {
   protocols.push("foo");
 }
 
-// great but what if we wanted the first element to be exactly "http" and the second to be 
+// great but what if we wanted the first element to be exactly "http" and the second to be
 // exactly "https"?
 
 {

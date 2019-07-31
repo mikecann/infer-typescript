@@ -1,6 +1,9 @@
 // ----------------------------------------
 {
-  function pickOnlyFunctions<T extends object, U extends keyof T>(obj: T): { [P in U]: T[P] } {
+  type Identity<T> = T;
+  type Pick<T extends object, U extends keyof T> = { [P in U]: T[P] };
+
+  function pickOnlyFunctions<T extends object, U extends keyof T>(obj: T): Pick<T, U> {
     throw "not implemented"
   }
 
@@ -11,7 +14,9 @@
     launch: () => { return 123 }
   }
 
-  const picked = pickOnlyFunctions(anObj) // { execute: () => {...} }  
+  const picked = pickOnlyFunctions(anObj) // { start: () => {...}, launch: () => {...} }  
+
+  type PickedType = typeof picked;
 }
 
 
