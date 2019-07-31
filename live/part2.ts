@@ -1,7 +1,7 @@
 {
 
   function pick(obj, keys): any {
-    throw "doesnt matter"
+    throw "not implemented"
   }
 
   const user = {
