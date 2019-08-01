@@ -8,7 +8,9 @@
 
   - I have been developing in it pretty much since its first release in 2012 but its only 
     fairly recently that I have started to dig a little deeper into the language
-    and I was blown away by the expressiveness of whats possible
+    and I was blown away by the expressiveness of whats possible.
+
+  - Thought I would share of of that with you guys.
 
   - I dont really know the level of peoples typescript knowledge so I have structured it so
     it starts off basic and gets a bit more complex as things go on.
