@@ -1,19 +1,22 @@
 {
-  type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T]
-  type Pick<T, U extends keyof T> = { [K in U]: T[K] };
-
-  function runPickedFunctions<T>(obj: T): Pick<T, FunctionKeys<T>> {
-    throw "not implemented"
+  type Subset<A extends {}, B extends {}> = {
+    [P in keyof B]: P extends keyof A ? (B[P] extends A[P] | undefined ? A[P] : never) : never;
   }
+
+  type Strict<A extends {}, B extends {}> = Subset<A, B> & Subset<B, A>;
+
+  type User = {
+    name: string;
+    age: number;
+  };
+
+  function addUserToDBStrict<T extends Strict<User, T>>(obj: T) { }
 
   const user = {
-    name: "mike",
-    age: 34,
-    say: () => "hello",
-    say2: () => 42,
-  }
+    name: "jane",
+    age: 100,
+    //foo: "bar"
+  };
 
-  const picked = runPickedFunctions(user) // { say: string, say2: number }  
-
-  type PickedType = typeof picked;
+  addUserToDBStrict(user);
 }

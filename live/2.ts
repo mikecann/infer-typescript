@@ -1,15 +1,19 @@
 {
-  function addUserToDb(user: User) { }
 
-  type User = {
-    name: string,
-    age: number
+  function pick(obj, keys): object {
+    throw "not implemented"
   }
 
-  const user: User = {
+  const user = {
     name: "mike",
-    age: 20,
+    age: 34,
+    say: () => "hello",
   }
 
-  addUserToDb(user);
+  const picked = pick(user, ["name", "age"]); // { name: "mike", age: 34 }
+
+  pick(user, ["foo"]);
+
+  pick(user, 444);
+
 }

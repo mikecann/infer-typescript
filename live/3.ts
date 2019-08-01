@@ -1,6 +1,7 @@
 {
+  type Pick<T, U extends keyof T> = { [K in U]: T[K] };
 
-  function pick(obj, keys): object {
+  function pickFunctions<T>(obj: T): Pick<T, keyof T> {
     throw "not implemented"
   }
 
@@ -8,12 +9,10 @@
     name: "mike",
     age: 34,
     say: () => "hello",
+    say2: () => 42,
   }
 
-  const picked = pick(user, ["name", "age"]); // { name: "mike", age: 34 }
+  const picked = pickFunctions(user) // { say: () => {...}, say2: () => {...} }  
 
-  pick(user, ["foo"]);
-
-  pick(user, 444);
-
+  type PickedType = typeof picked;
 }

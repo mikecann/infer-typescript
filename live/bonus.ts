@@ -6,7 +6,7 @@ type InferTest<T> =
 
 type T0 = InferTest<boolean>;
 type T1 = InferTest<string[]>;
-type T2 = InferTest<() => number>;
+type T2 = InferTest<(a: string) => number>;
 type T3 = InferTest<Promise<number>>;
 type T4 = InferTest<Promise<string>[]>;
 type T5 = InferTest<InferTest<Promise<boolean>[]>>;
