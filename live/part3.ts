@@ -9,10 +9,10 @@
     name: "mike",
     age: 34,
     say: () => "hello",
-    say2: () => "hello",
+    say2: () => 42,
   }
 
-  const picked = pickFunctions(user) // { say: () => {...} }  
+  const picked = pickFunctions(user) // { say: () => {...}, say2: () => {...} }  
 
   type PickedType = typeof picked;
 }

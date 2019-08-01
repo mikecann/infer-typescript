@@ -1,7 +1,5 @@
 {
-  function addUserToDb(user: User) {
-
-  }
+  function addUserToDb(user: User) { }
 
   type User = {
     name: string,

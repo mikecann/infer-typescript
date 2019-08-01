@@ -1,6 +1,6 @@
 {
 
-  function pick(obj, keys): any {
+  function pick(obj, keys): object {
     throw "not implemented"
   }
 
@@ -14,6 +14,6 @@
 
   pick(user, ["foo"]);
 
-  pick("whoops", 444);
+  pick(user, 444);
 
 }
